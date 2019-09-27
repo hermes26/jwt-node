@@ -3,6 +3,7 @@ const router = Router();
 
 const jwt = require('jsonwebtoken');
 const config = require('../config');
+const verifyToken = require('./verifyToken');
 
 const User = require('../models/User')
 
@@ -25,20 +26,9 @@ router.post('/login', async (req, res, next) => {
         
 })
 
-router.get('/profile', async (req, res, next) => { //usuario puede acceder solamente si tiene authorisacion. asi que primero hay que ver si el usuario tiene un token o no
-
-    //cuando enviamos un token, existe una cabezera/header x-access-token con valor el token que tenemos
-    //en el servidor comprobamos que existe esa header, entonces tiene un token, y entonces authorisacion para hacer algo
-    const token = req.headers['x-access-token'];
-    if(!token){
-        return res.status(401).json({
-            auth: false,
-            message: 'No token provided'
-        })
-    };
-
-    const decoded = jwt.verify(token, config.secret);
-    const user = await User.findById(decoded.id, { password: 0 }); //si no quieres devolver un dato en mongoose eg password: 0
+router.get('/profile', verifyToken, async (req, res, next) => { //usuario puede acceder solamente si tiene authorisacion. asi que primero hay que ver si el usuario tiene un token o no
+    
+    const user = await User.findById(req.userId, { password: 0 }); //si no quieres devolver un dato en mongoose eg password: 0
     if(!user){
         return res.status(404).send('No user found');
     }
