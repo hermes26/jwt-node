@@ -13,4 +13,8 @@ userSchema.methods.encryptPassword = async (password) => { //este metodo encrypt
     return bcrypt.hash(password, salt);
 }
 
+userSchema.methods.validatePassword = function(password) {
+    return bcrypt.compare(password, this.password) //password-> the one that is passed of signin; this.password->validate password is a method que apartanece a userschema method, asi que this.password es la contraseña que ya tengo en la bd en userschema
+}
+
 module.exports = model('User', userSchema);//para crear en la bd. en la bd voy a guardar un modelo de usuario que voy a llamar 'User', y va a estar basado en el userSchema 

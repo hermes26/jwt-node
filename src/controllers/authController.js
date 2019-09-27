@@ -46,8 +46,23 @@ router.get('/profile', async (req, res, next) => { //usuario puede acceder solam
     res.json(user);
 })
 
-router.post('/register', (req, res, next) => {
-    res.json('register')
+router.post('/register', async (req, res, next) => {
+    const {email, password} = req.body;
+    const user = await User.findOne({email: email});
+    if(!user){
+        return res.status(404).send('The email does not exist')
+    };
+
+    const passwordIsValid = await user.validatePassword(password);
+    if(!passwordIsValid){
+        return res.status(404).json({auth:false, token:null})
+    };
+
+    const token = jwt.sign({id: user._id}, config.secret, {
+        expiresIn: 60 * 60 * 24
+    });
+
+    res.json({auth: true, token: token})
 })
 
 
